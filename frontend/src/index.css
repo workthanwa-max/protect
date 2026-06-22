@@ -1,0 +1,32 @@
+:root {
+  --sans: 'Noto Sans Thai', 'IBM Plex Sans Thai', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  font-family: var(--sans);
+  color: #f8fafc;
+  background: #050711;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+code {
+  font-family: var(--mono);
+}
