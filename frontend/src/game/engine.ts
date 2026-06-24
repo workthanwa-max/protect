@@ -61,6 +61,10 @@ function spawnIncoming(state: GameState, kind: EntityKind): void {
 }
 
 function updateShield(state: GameState, dt: number): void {
+  const t = Math.min(1, dt * 15)
+  state.input.x += (state.input.targetX - state.input.x) * t
+  state.input.y += (state.input.targetY - state.input.y) * t
+
   const targetAngle = Math.atan2(state.input.y - state.core.y, state.input.x - state.core.x)
   state.shield.previousAngle = state.shield.angle
   state.shield.angle = targetAngle
@@ -110,6 +114,7 @@ function updateEntities(state: GameState, dt: number): void {
         state.flash = Math.max(state.flash, 0.55)
         spawnParticles(state, entity.x, entity.y, '#f0abfc', 16, 260)
         spawnText(state, entity.x, entity.y - 8, `+${points}`, '#f5d0fe')
+        playDeflectSound(state.combo)
       } else {
         spawnParticles(state, entity.x, entity.y, '#86efac', 8, 150)
         spawnText(state, entity.x, entity.y - 8, 'พลาด', '#bbf7d0')
@@ -127,6 +132,7 @@ function updateEntities(state: GameState, dt: number): void {
         state.shake = Math.max(state.shake, 0.95)
         spawnParticles(state, entity.x, entity.y, '#fb7185', 28, 360)
         spawnText(state, state.core.x, state.core.y - state.core.radius - 12, `-${Math.round(damage)}`, '#fecdd3')
+        playDamageSound()
       } else {
         const heal = 16
         state.core.health = Math.min(state.core.maxHealth, state.core.health + heal)
@@ -134,6 +140,7 @@ function updateEntities(state: GameState, dt: number): void {
         state.nutrients += 1
         spawnParticles(state, entity.x, entity.y, '#86efac', 20, 220)
         spawnText(state, entity.x, entity.y - 8, `+${heal} HP`, '#bbf7d0')
+        playHealSound()
       }
       entity.active = false
       return
@@ -256,4 +263,93 @@ export function createGameEngine({ canvas, level, controlMode, onSnapshot, onGam
       window.removeEventListener('resize', handleResize)
     },
   }
+}
+
+let audioCtx: AudioContext | null = null
+
+function initAudio() {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume()
+    }
+    return audioCtx
+  } catch (e) {
+    return null
+  }
+}
+
+function playDeflectSound(combo: number) {
+  const ctx = initAudio()
+  if (!ctx) return
+  try {
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+
+    const baseFreq = 440
+    const steps = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24]
+    const stepIndex = Math.min(Math.max(0, combo - 1), steps.length - 1)
+    const freq = baseFreq * Math.pow(2, steps[stepIndex] / 12)
+
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(freq, ctx.currentTime)
+
+    gainNode.gain.setValueAtTime(0, ctx.currentTime)
+    gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.01)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15)
+
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+
+    oscillator.start()
+    oscillator.stop(ctx.currentTime + 0.15)
+  } catch (e) {}
+}
+
+function playDamageSound() {
+  const ctx = initAudio()
+  if (!ctx) return
+  try {
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+
+    oscillator.type = 'sawtooth'
+    oscillator.frequency.setValueAtTime(150, ctx.currentTime)
+    oscillator.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.2)
+
+    gainNode.gain.setValueAtTime(0, ctx.currentTime)
+    gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.02)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
+
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+
+    oscillator.start()
+    oscillator.stop(ctx.currentTime + 0.2)
+  } catch (e) {}
+}
+
+function playHealSound() {
+  const ctx = initAudio()
+  if (!ctx) return
+  try {
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(880, ctx.currentTime)
+    oscillator.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.2)
+
+    gainNode.gain.setValueAtTime(0, ctx.currentTime)
+    gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.02)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
+
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+
+    oscillator.start()
+    oscillator.stop(ctx.currentTime + 0.2)
+  } catch (e) {}
 }

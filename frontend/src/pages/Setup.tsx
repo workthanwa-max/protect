@@ -155,6 +155,8 @@ export default function Setup({
         <div className="fullscreen-camera-wrapper">
           <CameraPreview vision={vision} compact={false} />
           <CalibrationScreen 
+            leftReady={leftReady}
+            rightReady={rightReady}
             handReady={handFocused}
             readyProgress={holdProgress} 
             onBack={() => setPhase('control')} 

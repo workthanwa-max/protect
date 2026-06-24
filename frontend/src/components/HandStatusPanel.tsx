@@ -1,5 +1,7 @@
 import { getHandMessage, type HandCoord, type VisionRef } from '../vision'
 import type { ControlMode } from '../game/state'
+import { HandIndicator } from './HandIndicator'
+import { ItemLegend } from './ItemLegend'
 
 type HandStatusPanelProps = {
   controlMode: ControlMode
@@ -84,12 +86,22 @@ function HandStatusPanel({ controlMode, vision, holdProgress = 0, countdown = nu
       {!setup && (
         <div className="hand-stage">{isBody ? renderSkeleton(hand) : <div className="hand-empty">ใช้เมาส์</div>}</div>
       )}
+      {setup && isBody && <ItemLegend />}
       {isBody && (
         <>
           <div className="hold-track">
             <div style={{ width: `${progress * 100}%` }} />
           </div>
-          <small>{getHandMessage(hand)}</small>
+          {setup ? (
+            <HandIndicator 
+              leftReady={Boolean(vision.left?.active)} 
+              rightReady={Boolean(vision.right?.active)} 
+              handReady={Boolean(hand?.active)}
+              message={getHandMessage(hand)}
+            />
+          ) : (
+            <small>{getHandMessage(hand)}</small>
+          )}
         </>
       )}
     </aside>

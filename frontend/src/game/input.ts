@@ -17,8 +17,8 @@ export function bindPointerInput(canvas: HTMLCanvasElement, state: GameState, co
     const rect = canvas.getBoundingClientRect()
     const scaleX = state.width / rect.width
     const scaleY = state.height / rect.height
-    state.input.x = (event.clientX - rect.left) * scaleX
-    state.input.y = (event.clientY - rect.top) * scaleY
+    state.input.targetX = (event.clientX - rect.left) * scaleX
+    state.input.targetY = (event.clientY - rect.top) * scaleY
     state.input.pointerActive = true
   }
 
@@ -33,9 +33,14 @@ export function bindPointerInput(canvas: HTMLCanvasElement, state: GameState, co
       if (controlMode === 'body' && vr.active && vr.tracking && vr.mode === 'camera') {
         const hand = pickActiveHand(vr.right, vr.left)
         if (hand) {
-          state.input.x = clamp01(hand.x) * state.width
-          state.input.y = clamp01(hand.y) * state.height
+          state.input.targetX = clamp01(hand.x) * state.width
+          state.input.targetY = clamp01(hand.y) * state.height
           state.input.pointerActive = true
+          state.input.activeHand = hand
+          state.input.activeHandSide = hand === vr.left ? 'L' : 'R'
+        } else {
+          state.input.activeHand = undefined
+          state.input.activeHandSide = undefined
         }
       }
     } catch {

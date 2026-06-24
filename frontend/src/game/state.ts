@@ -1,3 +1,5 @@
+import type { HandCoord } from '../vision'
+
 export type GamePhase = 'ready' | 'running' | 'gameover'
 
 export type EntityKind = 'toxin' | 'nutrient'
@@ -56,7 +58,11 @@ export type FloatingText = {
 export type InputState = {
   x: number
   y: number
+  targetX: number
+  targetY: number
   pointerActive: boolean
+  activeHand?: HandCoord
+  activeHandSide?: 'L' | 'R'
 }
 
 export type ShieldState = {
@@ -76,7 +82,6 @@ export type CoreState = {
   maxHealth: number
 }
 
-export type HandCoord = { x: number; y: number; visible: boolean; confidence: number } | null
 
 export type GameSnapshot = {
   phase: 'ready' | 'running' | 'gameover'
@@ -175,6 +180,8 @@ export function createGameState(level: PlayLevel = 1): GameState {
     input: {
       x: 480,
       y: 320,
+      targetX: 480,
+      targetY: 320,
       pointerActive: false,
     },
     core: {
@@ -240,8 +247,10 @@ export function resizeGameState(
   state.core.radius = Math.max(34, Math.min(width, height) * 0.065)
   state.shield.radius = state.core.radius + Math.max(62, Math.min(width, height) * 0.11)
   state.shield.thickness = Math.max(14, Math.min(width, height) * 0.024)
-  state.input.x = state.input.pointerActive ? state.input.x : state.core.x
-  state.input.y = state.input.pointerActive ? state.input.y : state.core.y - state.shield.radius
+  state.input.targetX = state.input.pointerActive ? state.input.targetX : state.core.x
+  state.input.targetY = state.input.pointerActive ? state.input.targetY : state.core.y - state.shield.radius
+  state.input.x = state.input.targetX
+  state.input.y = state.input.targetY
 }
 
 export function toSnapshot(state: GameState): GameSnapshot {

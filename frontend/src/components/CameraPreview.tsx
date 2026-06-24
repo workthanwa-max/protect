@@ -86,31 +86,41 @@ function CameraPreview({ vision, compact = false, holdProgress = 0 }: CameraPrev
          style={!compact ? { position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 1, borderRadius: 0, border: 'none' } : {}}>
       <video ref={videoRef} className="camera-video mirror" playsInline muted style={!compact ? { objectFit: 'cover' } : {}} />
       <svg className={`camera-skeleton ${hand ? `focus-${hand.focus}` : ''}`} viewBox="0 0 100 100" aria-hidden="true" preserveAspectRatio="none">
-        {hand?.landmarks.length
+        {hand?.landmarks?.length
           ? HAND_LINES.map(([start, end]) => {
               const a = hand.landmarks[start]
               const b = hand.landmarks[end]
               if (!a || !b) return null
               return (
                 <line
-                  key={`${start}-${end}`}
+                  key={`${side}-${start}-${end}`}
                   x1={a.x * 100}
                   y1={a.y * 100}
                   x2={b.x * 100}
                   y2={b.y * 100}
+                  stroke={side === 'L' ? "rgba(76, 201, 240, 0.86)" : "rgba(61, 220, 151, 0.86)"}
+                  strokeWidth="0.8"
+                  strokeLinecap="round"
                 />
               )
             })
           : null}
-        {hand?.landmarks.map((point, index) => (
-          <circle key={index} cx={point.x * 100} cy={point.y * 100} r={index === 0 ? 1.5 : 0.8} />
-        ))}
+        {hand?.landmarks?.map((point, index) => {
+          const isPalm = index === 9
+          return (
+            <circle
+              key={`${side}-node-${index}`}
+              cx={point.x * 100}
+              cy={point.y * 100}
+              r={isPalm ? 2 : 0.8}
+              fill={isPalm ? '#ffff00' : 'rgba(255, 255, 255, 0.6)'}
+            />
+          )
+        })}
       </svg>
-      <div className="camera-frame" aria-hidden="true" style={!compact ? { inset: '5%', width: '90%', height: '90%' } : {}} />
       
       {!compact && (
         <div className="camera-notifications" style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 2 }}>
-          {side && <div className="hand-badge">{side}</div>}
           <div className="status-card" style={{ display: 'none' }}>
             <span>{focusLabel}</span>
             <div className="progress-bar-bg">

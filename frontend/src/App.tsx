@@ -194,9 +194,7 @@ function App() {
 
       {phase === 'menu' && (
         <div className="overlay-wrapper">
-          <section className="overlay-panel menu-panel">
-            <StartScreen onStart={openSetup} />
-          </section>
+          <StartScreen onStart={openSetup} />
         </div>
       )}
 

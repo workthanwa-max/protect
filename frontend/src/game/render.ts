@@ -1,4 +1,5 @@
 import type { GameState } from './state'
+import type { HandCoord } from '../vision'
 
 function drawBackground(ctx: CanvasRenderingContext2D, state: GameState): void {
   const gradient = ctx.createRadialGradient(
@@ -226,6 +227,81 @@ function drawFloatingTexts(ctx: CanvasRenderingContext2D, state: GameState): voi
   ctx.restore()
 }
 
+function drawHand(
+  context: CanvasRenderingContext2D,
+  hand: HandCoord | undefined | null,
+  color: string,
+  label: string,
+  state: GameState
+) {
+  if (!hand || !hand.visible) return
+
+  // Draw skeleton if landmarks exist
+  if (hand.landmarks && hand.landmarks.length > 0) {
+    context.save()
+    context.beginPath()
+    context.strokeStyle = color
+    context.lineWidth = 4
+    context.lineCap = 'round'
+    context.lineJoin = 'round'
+
+    const connections = [
+      [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
+      [0, 5], [5, 6], [6, 7], [7, 8], // Index
+      [5, 9], [9, 10], [10, 11], [11, 12], // Middle
+      [9, 13], [13, 14], [14, 15], [15, 16], // Ring
+      [13, 17], [0, 17], [17, 18], [18, 19], [19, 20] // Pinky & Palm
+    ]
+
+    connections.forEach(([start, end]) => {
+      const p1 = hand.landmarks[start]
+      const p2 = hand.landmarks[end]
+      if (p1 && p2) {
+        context.moveTo(p1.x * state.width, p1.y * state.height)
+        context.lineTo(p2.x * state.width, p2.y * state.height)
+      }
+    })
+    context.stroke()
+
+    // Draw joints
+    hand.landmarks.forEach((p, i) => {
+      context.beginPath()
+      context.arc(p.x * state.width, p.y * state.height, i === 9 ? 8 : 4, 0, Math.PI * 2)
+      context.fillStyle = i === 9 ? '#ffff00' : 'rgba(255, 255, 255, 0.6)'
+      context.fill()
+    })
+    context.restore()
+  }
+
+  const cx = hand.x * state.width
+  const cy = hand.y * state.height
+  const radius = hand.size * Math.max(state.width, state.height) * 0.4
+
+  // Draw collision area
+  context.save()
+  context.beginPath()
+  context.strokeStyle = 'rgba(255, 255, 255, 0.92)'
+  context.lineWidth = 2
+  context.setLineDash([4, 4])
+  context.arc(cx, cy, radius, 0, Math.PI * 2)
+  context.stroke()
+  context.setLineDash([])
+
+  context.fillStyle = '#ffffff'
+  context.font = '700 13px system-ui'
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.fillText(label, cx, cy - radius - 12)
+  context.restore()
+}
+
+function drawHands(ctx: CanvasRenderingContext2D, state: GameState) {
+  if (!state.input.pointerActive || !state.input.activeHand) return
+
+  const color = state.input.activeHandSide === 'L' ? 'rgba(76, 201, 240, 0.86)' : 'rgba(61, 220, 151, 0.86)'
+  drawHand(ctx, state.input.activeHand, color, state.input.activeHandSide || 'Hand', state)
+}
+
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState): void {
   ctx.save()
   ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0)
@@ -241,6 +317,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState): voi
   drawCore(ctx, state)
   drawShield(ctx, state)
   drawInputCue(ctx, state)
+  drawHands(ctx, state)
   drawEntities(ctx, state)
   drawFloatingTexts(ctx, state)
 
