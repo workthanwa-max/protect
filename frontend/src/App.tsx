@@ -4,7 +4,7 @@ import GameOver from './components/GameOver'
 import HandStatusPanel from './components/HandStatusPanel'
 import HUD from './components/HUD'
 import StartScreen from './components/StartScreen'
-import { getLevelConfig, type ControlMode, type GameSnapshot, type PlayLevel } from './game/state'
+import { SCORE_THRESHOLDS, type ControlMode, type GameSnapshot } from './game/state'
 import useHandTracking from './hooks/useHandTracking'
 import useBGM from './hooks/useBGM'
 import { startMediaPipeWorker, stopMockVision } from './vision'
@@ -18,7 +18,6 @@ type ThemeName = 'focus' | 'neon'
 
 const initialSnapshot: GameSnapshot = {
   phase: 'ready',
-  level: 1,
   score: 0,
   health: 100,
   maxHealth: 100,
@@ -29,16 +28,15 @@ const initialSnapshot: GameSnapshot = {
 }
 
 function getRewardNotice(snapshot: GameSnapshot): string {
-  const levelConfig = getLevelConfig(snapshot.level as PlayLevel)
-  const ratio = snapshot.score / levelConfig.rewardScore
+  const score = snapshot.score
 
-  if (ratio >= 1.4) {
+  if (score >= SCORE_THRESHOLDS.TIER_4) {
     return 'แจ้งเจ้าหน้าที่: ได้รับรางวัลระดับ 4 — ผู้พิทักษ์สมอง'
   }
-  if (ratio >= 1) {
+  if (score >= SCORE_THRESHOLDS.TIER_3) {
     return 'แจ้งเจ้าหน้าที่: ได้รับรางวัลระดับ 3 — นักต้านภัยยาเสพติด'
   }
-  if (ratio >= 0.65) {
+  if (score >= SCORE_THRESHOLDS.TIER_2) {
     return 'แจ้งเจ้าหน้าที่: ได้รับรางวัลระดับ 2 — นักเลือกสิ่งดี'
   }
   return 'แจ้งเจ้าหน้าที่: ได้รับรางวัลระดับ 1 — กำลังใจคนกล้าเล่น'
@@ -59,7 +57,6 @@ function hasFocusedHand(vision: VisionRef): boolean {
 
 function App() {
   const [phase, setPhase] = useState<AppPhase>('menu')
-  const [selectedLevel, setSelectedLevel] = useState<PlayLevel>(1)
   const [theme] = useState<ThemeName>('focus')
   const [controlMode, setControlMode] = useState<ControlMode>('mouse')
   const [cameraEnabled, setCameraEnabled] = useState(false)
@@ -86,17 +83,12 @@ function App() {
   }, [phase, playBGM, pauseBGM])
 
   const openSetup = useCallback(() => {
-    setPhase('level-select')
-  }, [])
-
-  const handleSelectLevel = useCallback((level: PlayLevel) => {
-    setSelectedLevel(level)
-    setSnapshot({ ...initialSnapshot, level })
+    setPhase('control')
+    setSnapshot({ ...initialSnapshot })
     setControlMode('mouse')
     setCameraEnabled(false)
     setHandHoldMs(0)
     setCountdown(null)
-    setPhase('control')
   }, [])
 
   const beginCountdown = useCallback(() => {
@@ -195,8 +187,7 @@ function App() {
       {phase === 'playing' && (
         <>
           <GameCanvas
-            key={`${selectedLevel}-${controlMode}`}
-            level={selectedLevel}
+            key={controlMode}
             controlMode={controlMode}
             onSnapshot={setSnapshot}
             onGameOver={handleGameOver}
@@ -213,31 +204,7 @@ function App() {
       )}
 
 
-      {phase === 'level-select' && (
-        <div className="overlay-wrapper setup-wrapper">
-          <section className="overlay-panel setup-panel">
-             <p className="eyebrow">เลือกความยาก</p>
-             <h1>ระดับของเกม</h1>
-             <p className="intro">เลือกระดับความยากที่เหมาะกับคุณ เพื่อเริ่มภารกิจปกป้องสมอง</p>
-             <div className="level-grid">
-               {[1, 2, 3, 4].map((l) => {
-                 const config = getLevelConfig(l as PlayLevel)
-                 return (
-                   <button
-                     key={l}
-                     type="button"
-                     className="level-card"
-                     onClick={() => handleSelectLevel(l as PlayLevel)}
-                   >
-                     <strong>{config.title}</strong>
-                     <span>{config.subtitle}</span>
-                   </button>
-                 )
-               })}
-             </div>
-          </section>
-        </div>
-      )}
+      {/* level-select phase removed */}
 
       {phase === 'control' && (
         <div className="overlay-wrapper setup-wrapper">

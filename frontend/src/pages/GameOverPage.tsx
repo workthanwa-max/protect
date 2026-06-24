@@ -1,6 +1,6 @@
 import GameOver from '../components/GameOver'
 import LeaderboardBoard from '../components/LeaderboardBoard'
-import type { GameSnapshot, PlayLevel } from '../game/state'
+import type { GameSnapshot } from '../game/state'
 import type { LeaderboardEntry, SubmitState } from '../services/api'
 
 type GameOverPageProps = {
@@ -10,8 +10,6 @@ type GameOverPageProps = {
   onRestart: () => void
   onMenu: () => void
   leaderboard: LeaderboardEntry[]
-  leaderboardLevel: PlayLevel
-  setLeaderboardLevel: (level: PlayLevel) => void
 }
 
 export default function GameOverPage({
@@ -21,8 +19,6 @@ export default function GameOverPage({
   onRestart,
   onMenu,
   leaderboard,
-  leaderboardLevel,
-  setLeaderboardLevel,
 }: GameOverPageProps) {
   return (
     <div className="overlay-wrapper">
@@ -36,10 +32,8 @@ export default function GameOverPage({
       <aside className="overlay-panel leaderboard-panel">
         <LeaderboardBoard
           entries={leaderboard}
-          activeLevel={leaderboardLevel}
-          onLevelChange={setLeaderboardLevel}
-          title={`สถิติผู้เล่นท็อป 5 (ระดับ ${leaderboardLevel})`}
-          emptyText="ยังไม่มีสถิติสำหรับระดับนี้"
+          title="สถิติผู้เล่นท็อป 5"
+          emptyText="ยังไม่มีสถิติสำหรับตอนนี้"
         />
       </aside>
     </div>

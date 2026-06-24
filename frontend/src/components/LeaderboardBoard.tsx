@@ -1,13 +1,9 @@
 import type { LeaderboardEntry } from '../services/api'
 
-import type { PlayLevel } from '../game/state'
-
 type LeaderboardBoardProps = {
   entries: LeaderboardEntry[]
   title?: string
   emptyText?: string
-  activeLevel?: PlayLevel
-  onLevelChange?: (level: PlayLevel) => void
 }
 
 function rankLabel(index: number): string {
@@ -21,8 +17,6 @@ function LeaderboardBoard({
   entries,
   title = 'อันดับคะแนนบูธ',
   emptyText = 'ยังไม่มีคะแนนในระบบ',
-  activeLevel = 1,
-  onLevelChange,
 }: LeaderboardBoardProps) {
   const topEntries = entries.slice(0, 5)
 
@@ -30,20 +24,6 @@ function LeaderboardBoard({
     <div className="leaderboard floating-leaderboard">
       <div className="leaderboard-header">
         <h2>{title}</h2>
-        {onLevelChange && (
-          <div className="leaderboard-tabs">
-            {[1, 2, 3, 4].map((l) => (
-              <button
-                key={l}
-                type="button"
-                className={`tab-btn ${activeLevel === l ? 'active' : ''}`}
-                onClick={() => onLevelChange(l as PlayLevel)}
-              >
-                L{l}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
       {topEntries.length === 0 ? (
         <p>{emptyText}</p>

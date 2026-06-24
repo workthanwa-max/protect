@@ -11,7 +11,6 @@ import { spawnEntity, spawnParticles, spawnText } from './pooling'
 import { renderGame } from './render'
 import {
   createGameState,
-  getLevelConfig,
   resetGameState,
   resizeGameState,
   toSnapshot,
@@ -19,7 +18,6 @@ import {
   type ControlMode,
   type GameSnapshot,
   type GameState,
-  type PlayLevel,
 } from './state'
 
 export type GameEngine = {
@@ -31,14 +29,12 @@ export type GameEngine = {
 
 type EngineOptions = {
   canvas: HTMLCanvasElement
-  level: PlayLevel
   controlMode: ControlMode
   onSnapshot: (snapshot: GameSnapshot) => void
   onGameOver: (snapshot: GameSnapshot) => void
 }
 
 function spawnIncoming(state: GameState, kind: EntityKind): void {
-  const levelConfig = getLevelConfig(state.level)
   const edge = Math.floor(Math.random() * 4)
   const margin = 70
   const x = edge === 0 ? -margin : edge === 1 ? state.width + margin : Math.random() * state.width
@@ -48,10 +44,13 @@ function spawnIncoming(state: GameState, kind: EntityKind): void {
   const dx = aimX - x
   const dy = aimY - y
   const distance = Math.max(1, Math.hypot(dx, dy))
+  
+  // Speed scales up with difficulty
   const speed =
     kind === 'toxin'
-      ? (110 + state.difficulty * 45 + Math.random() * 60) * levelConfig.speed
-      : (80 + state.difficulty * 15 + Math.random() * 40) * levelConfig.speed
+      ? (100 + state.difficulty * 40 + Math.random() * 50)
+      : (80 + state.difficulty * 15 + Math.random() * 30)
+      
   const angle = Math.atan2(dy, dx)
   const radius = kind === 'toxin' ? 14 + Math.random() * 7 : 12 + Math.random() * 5
   spawnEntity(state, kind, x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, radius)
@@ -73,24 +72,27 @@ function updateShield(state: GameState, dt: number): void {
 }
 
 function updateSpawning(state: GameState, dt: number): void {
-  const levelConfig = getLevelConfig(state.level)
-  // stronger difficulty scaling: time weights more, and level step is larger
-  state.difficulty = 1 + state.elapsed / 16 + (state.level - 1) * 0.45
+  // Difficulty increases smoothly over time. 
+  // e.g. at 60s, difficulty is 3.4
+  state.difficulty = 1 + state.elapsed / 25
   state.spawnTimer -= dt
   state.nutrientTimer -= dt
 
   if (state.spawnTimer <= 0) {
-    const nutrientChance = state.level === 4 ? 0.15 : 0.28 // Less nutrients on level 4
+    // Nutrient chance decreases as difficulty goes up, from ~28% down to 5%
+    const nutrientChance = clamp(0.3 - state.difficulty * 0.04, 0.05, 0.28)
     const isNutrient = Math.random() < nutrientChance
     spawnIncoming(state, isNutrient ? 'nutrient' : 'toxin')
     
-    const nextSpawnBase = clamp(0.9 - state.difficulty * 0.085, 0.25, 0.9) * levelConfig.spawn
+    // Spawn faster as difficulty goes up
+    const nextSpawnBase = clamp(1.2 - state.difficulty * 0.12, 0.2, 1.2)
     state.spawnTimer = nextSpawnBase * (0.8 + Math.random() * 0.4)
   }
 
   if (state.nutrientTimer <= 0) {
     spawnIncoming(state, 'nutrient')
-    state.nutrientTimer = (6.0 + Math.random() * 4.0) * Math.max(0.8, levelConfig.spawn)
+    // Less frequent guaranteed nutrients over time
+    state.nutrientTimer = (5.0 + Math.random() * 3.0) * Math.max(0.8, state.difficulty * 0.5)
   }
 }
 
@@ -125,8 +127,8 @@ function updateEntities(state: GameState, dt: number): void {
     if (!entity.reacted && intersectsCore(entity, state.core)) {
       entity.reacted = true
       if (entity.kind === 'toxin') {
-        // make toxin damage scale harder with difficulty and level
-        const damage = 12 + state.difficulty * 6 + (state.level - 1) * 3
+        // Damage scales purely on difficulty
+        const damage = 10 + state.difficulty * 5
         state.core.health -= damage
         state.combo = 0
         state.shake = Math.max(state.shake, 0.95)
@@ -197,8 +199,8 @@ function resizeCanvas(canvas: HTMLCanvasElement, state: GameState): void {
   resizeGameState(state, width, height, dpr)
 }
 
-export function createGameEngine({ canvas, level, controlMode, onSnapshot, onGameOver }: EngineOptions): GameEngine {
-  const state = createGameState(level, controlMode)
+export function createGameEngine({ canvas, controlMode, onSnapshot, onGameOver }: EngineOptions): GameEngine {
+  const state = createGameState(controlMode)
   const ctx = canvas.getContext('2d')
   let raf = 0
   let lastTime = performance.now()
@@ -240,7 +242,7 @@ export function createGameEngine({ canvas, level, controlMode, onSnapshot, onGam
 
   function start(): void {
     resizeCanvas(canvas, state)
-    resetGameState(state, level, controlMode)
+    resetGameState(state, controlMode)
     lastTime = performance.now()
     gameOverSent = false
     cancelAnimationFrame(raf)

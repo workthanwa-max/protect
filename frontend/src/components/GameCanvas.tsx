@@ -1,15 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { createGameEngine } from '../game/engine'
-import type { ControlMode, GameSnapshot, PlayLevel } from '../game/state'
+import type { ControlMode, GameSnapshot } from '../game/state'
 
 type GameCanvasProps = {
-  level: PlayLevel
   controlMode: ControlMode
   onSnapshot: (snapshot: GameSnapshot) => void
   onGameOver: (snapshot: GameSnapshot) => void
 }
 
-function GameCanvas({ level, controlMode, onSnapshot, onGameOver }: GameCanvasProps) {
+function GameCanvas({ controlMode, onSnapshot, onGameOver }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const callbacksRef = useRef({ onSnapshot, onGameOver })
 
@@ -23,7 +22,6 @@ function GameCanvas({ level, controlMode, onSnapshot, onGameOver }: GameCanvasPr
 
     const engine = createGameEngine({
       canvas,
-      level,
       controlMode,
       onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
       onGameOver: (snapshot) => callbacksRef.current.onGameOver(snapshot),
@@ -31,7 +29,7 @@ function GameCanvas({ level, controlMode, onSnapshot, onGameOver }: GameCanvasPr
     engine.start()
 
     return () => engine.dispose()
-  }, [level, controlMode])
+  }, [controlMode])
 
   return <canvas ref={canvasRef} className="game-canvas" aria-label="Synapse Shield game canvas" />
 }

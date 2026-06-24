@@ -4,18 +4,7 @@ export type GamePhase = 'ready' | 'running' | 'gameover'
 
 export type EntityKind = 'toxin' | 'nutrient'
 
-export type PlayLevel = 1 | 2 | 3 | 4
-
 export type ControlMode = 'mouse' | 'body'
-
-export type LevelConfig = {
-  level: PlayLevel
-  title: string
-  subtitle: string
-  speed: number
-  spawn: number
-  rewardScore: number
-}
 
 export type Entity = {
   active: boolean
@@ -85,7 +74,6 @@ export type CoreState = {
 
 export type GameSnapshot = {
   phase: 'ready' | 'running' | 'gameover'
-  level: number
   score: number
   health: number
   maxHealth: number
@@ -99,7 +87,6 @@ export type GameSnapshot = {
 
 export type GameState = {
   phase: GamePhase
-  level: PlayLevel
   width: number
   height: number
   dpr: number
@@ -122,49 +109,15 @@ export type GameState = {
   texts: FloatingText[]
 }
 
-export const LEVELS: LevelConfig[] = [
-  {
-    level: 1,
-    title: 'ระดับ 1: รู้ทัน',
-    subtitle: 'เริ่มต้นช้า เหมาะกับผู้เล่นใหม่',
-    speed: 0.85,
-    spawn: 1.15,
-    rewardScore: 350,
-  },
-  {
-    level: 2,
-    title: 'ระดับ 2: ตั้งสติ',
-    subtitle: 'เร็วขึ้น ต้องแยกสิ่งดีและสิ่งเสพติด',
-    speed: 1.05,
-    spawn: 0.95,
-    rewardScore: 800,
-  },
-  {
-    level: 3,
-    title: 'ระดับ 3: ต้านแรงกดดัน',
-    subtitle: 'ลูกพิษถี่ขึ้น วัดสมาธิและการตัดสินใจ',
-    speed: 1.2,
-    spawn: 0.86,
-    rewardScore: 1350,
-  },
-  {
-    level: 4,
-    title: 'ระดับ 4: ปกป้องอนาคต',
-    subtitle: 'ความเร็วใกล้เคียงระดับสาม แต่ไอเทมฟื้นฟูน้อยลง',
-    speed: 1.3,
-    spawn: 0.75,
-    rewardScore: 2000,
-  },
-]
-
-export function getLevelConfig(level: PlayLevel): LevelConfig {
-  return LEVELS.find((config) => config.level === level) ?? LEVELS[0]
+export const SCORE_THRESHOLDS = {
+  TIER_2: 1200,
+  TIER_3: 2500,
+  TIER_4: 4500,
 }
 
-export function createGameState(level: PlayLevel = 1, controlMode: ControlMode = 'mouse'): GameState {
+export function createGameState(controlMode: ControlMode = 'mouse'): GameState {
   return {
     phase: 'ready',
-    level,
     width: 960,
     height: 640,
     dpr: 1,
@@ -207,14 +160,14 @@ export function createGameState(level: PlayLevel = 1, controlMode: ControlMode =
   }
 }
 
-export function resetGameState(state: GameState, level: PlayLevel = state.level, controlMode: ControlMode = 'mouse'): void {
+export function resetGameState(state: GameState, controlMode: ControlMode = 'mouse'): void {
   const width = state.width
   const height = state.height
   const dpr = state.dpr
   const entities = state.entities
   const particles = state.particles
   const texts = state.texts
-  Object.assign(state, createGameState(level, controlMode))
+  Object.assign(state, createGameState(controlMode))
   state.width = width
   state.height = height
   state.dpr = dpr
@@ -258,7 +211,6 @@ export function resizeGameState(
 export function toSnapshot(state: GameState): GameSnapshot {
   return {
     phase: state.phase,
-    level: state.level,
     score: Math.floor(state.score),
     health: Math.max(0, Math.ceil(state.core.health)),
     maxHealth: state.core.maxHealth,
