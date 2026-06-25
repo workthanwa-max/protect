@@ -72,9 +72,19 @@ function updateShield(state: GameState, dt: number): void {
 }
 
 function updateSpawning(state: GameState, dt: number): void {
-  // Difficulty increases smoothly over time. 
-  // e.g. at 60s, difficulty is 3.4
-  state.difficulty = 1 + state.elapsed / 25
+  // Stepped difficulty to balance early ramp-up and late-game spikes
+  let diff = 1.5;
+  if (state.elapsed >= 60) {
+    diff = 7.5; // Final brutal stage
+  } else if (state.elapsed >= 45) {
+    diff = 5.5;
+  } else if (state.elapsed >= 30) {
+    diff = 4.0;
+  } else if (state.elapsed >= 15) {
+    diff = 2.5;
+  }
+  state.difficulty = diff;
+
   state.spawnTimer -= dt
   state.nutrientTimer -= dt
 
@@ -84,8 +94,8 @@ function updateSpawning(state: GameState, dt: number): void {
     const isNutrient = Math.random() < nutrientChance
     spawnIncoming(state, isNutrient ? 'nutrient' : 'toxin')
     
-    // Spawn faster as difficulty goes up
-    const nextSpawnBase = clamp(1.2 - state.difficulty * 0.12, 0.2, 1.2)
+    // Spawn faster as difficulty goes up, down to a very fast minimum
+    const nextSpawnBase = clamp(1.2 - state.difficulty * 0.15, 0.15, 1.2)
     state.spawnTimer = nextSpawnBase * (0.8 + Math.random() * 0.4)
   }
 

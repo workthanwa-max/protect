@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คู่มือไอคอน - MyGame</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --text-color: #f8fafc;
+    }
+    
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      text-align: center;
+      background: linear-gradient(to right, #60a5fa, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .section {
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 60px;
+    }
+
+    .section h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #334155;
+    }
+
+    .section.toxins h2 {
+      color: #fb7185;
+      border-bottom-color: #9f1239;
+    }
+
+    .section.nutrients h2 {
+      color: #86efac;
+      border-bottom-color: #166534;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      border: 1px solid #334155;
+    }
+
+    .icon-wrapper {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 30px var(--glow-color);
+      background-color: var(--icon-bg);
+    }
+
+    .toxins .icon-wrapper {
+      --glow-color: rgba(251, 113, 133, 0.4);
+      --icon-bg: rgba(127, 29, 29, 0.9);
+    }
+
+    .nutrients .icon-wrapper {
+      --glow-color: rgba(134, 239, 172, 0.4);
+      --icon-bg: rgba(20, 83, 45, 0.9);
+    }
+
+    .card h3 {
+      font-size: 1.5rem;
+      margin: 0 0 10px 0;
+    }
+
+    .card p {
+      color: #cbd5e1;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    @media print {
+      body {
+        background-color: white;
+        color: black;
+        padding: 0;
+      }
+      h1 {
+        -webkit-text-fill-color: black;
+        background: none;
+      }
+      p.subtitle {
+        color: #475569;
+      }
+      .card {
+        background: white;
+        border: 2px solid #cbd5e1;
+        break-inside: avoid;
+      }
+      .card p {
+        color: #334155;
+      }
+      .toxins .icon-wrapper {
+        --glow-color: transparent;
+        border: 4px solid #fb7185;
+      }
+      .nutrients .icon-wrapper {
+        --glow-color: transparent;
+        border: 4px solid #86efac;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>คู่มือไอคอน</h1>
+  <p class="subtitle">สัญลักษณ์ต่างๆ ในเกมที่คุณต้องรู้ก่อนเล่น</p>
+
+  <div class="section toxins">
+    <h2>⚠️ สิ่งเสพติด (ปัดทิ้ง!)</h2>
+    <p style="margin-top:-10px; margin-bottom: 20px; color: #f43f5e;">สิ่งเหล่านี้จะทำลายสมองของคุณ ปัดพวกมันออกไปให้พ้น!</p>
+    <div class="grid">
+      <div class="card">
+        <div class="icon-wrapper">💊</div>
+        <h3>ยาเม็ด</h3>
+        <p>ยาม้า ยาบ้า หรือยาเสพติดชนิดเม็ด</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrapper">💉</div>
+        <h3>เข็มฉีดยา</h3>
+        <p>สารเสพติดชนิดฉีดเข้าเส้นเลือด</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrapper">🚬</div>
+        <h3>บุหรี่</h3>
+        <p>ควันพิษที่ทำลายปอดและสมอง</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section nutrients">
+    <h2>💚 สิ่งดีๆ (รับไว้!)</h2>
+    <p style="margin-top:-10px; margin-bottom: 20px; color: #22c55e;">ปล่อยให้สิ่งเหล่านี้เข้ามายังสมองของคุณเพื่อเพิ่มพลังและฟื้นฟูสุขภาพ</p>
+    <div class="grid">
+      <div class="card">
+        <div class="icon-wrapper">🍎</div>
+        <h3>แอปเปิ้ล</h3>
+        <p>ผลไม้และวิตามินที่ดีต่อร่างกาย</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrapper">🥗</div>
+        <h3>สลัด</h3>
+        <p>อาหารที่มีประโยชน์และให้พลังงาน</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrapper">📚</div>
+        <h3>หนังสือ</h3>
+        <p>ความรู้ที่ช่วยพัฒนาสมอง</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrapper">❤️</div>
+        <h3>ความรัก</h3>
+        <p>กำลังใจและพลังบวก</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Optional: Add print button for convenience
+    const printBtn = document.createElement('button');
+    printBtn.innerText = '🖨️ พิมพ์หน้านี้';
+    printBtn.style.position = 'fixed';
+    printBtn.style.bottom = '30px';
+    printBtn.style.right = '30px';
+    printBtn.style.padding = '15px 25px';
+    printBtn.style.fontSize = '1.2rem';
+    printBtn.style.background = '#3b82f6';
+    printBtn.style.color = 'white';
+    printBtn.style.border = 'none';
+    printBtn.style.borderRadius = '50px';
+    printBtn.style.cursor = 'pointer';
+    printBtn.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.4)';
+    printBtn.onclick = () => window.print();
+    
+    // Hide button when printing
+    const style = document.createElement('style');
+    style.innerHTML = '@media print { button { display: none !important; } }';
+    document.head.appendChild(style);
+    
+    document.body.appendChild(printBtn);
+  </script>
+</body>
+</html>
